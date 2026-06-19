@@ -1,6 +1,10 @@
 package com.vishnu.inventory.controller;
 
 import java.util.List;
+import com.vishnu.inventory.dto.PurchaseOrderDto;
+import com.vishnu.inventory.request.PlaceOrderRequest;
+
+import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
 
@@ -25,10 +29,41 @@ public PurchaseOrderController(
     this.purchaseOrderService = purchaseOrderService;
 
 }
+@PostMapping("/place")
+
+public ResponseEntity<PurchaseOrderDto> placeOrder(
+
+        @Valid
+
+        @RequestBody
+
+        PlaceOrderRequest request
+
+) {
+
+    PurchaseOrder order =
+
+            purchaseOrderService.placeOrder(
+
+                    request
+
+            );
+
+    return ResponseEntity.ok(
+
+            purchaseOrderService.getById(
+
+                    order.getId()
+
+            )
+
+    );
+
+}
 
 @GetMapping
 
-public ResponseEntity<List<PurchaseOrder>> getAll() {
+public ResponseEntity<List<PurchaseOrderDto>> getAll() {
 
     return ResponseEntity.ok(
 
@@ -40,7 +75,7 @@ public ResponseEntity<List<PurchaseOrder>> getAll() {
 
 @GetMapping("/{id}")
 
-public ResponseEntity<PurchaseOrder> getById(
+public ResponseEntity<PurchaseOrderDto> getById(
 
         @PathVariable
 

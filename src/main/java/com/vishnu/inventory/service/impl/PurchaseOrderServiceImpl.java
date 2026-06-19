@@ -1,6 +1,8 @@
 package com.vishnu.inventory.service.impl;
 
 import java.util.List;
+import com.vishnu.inventory.entity.OrderStatus;
+import com.vishnu.inventory.entity.Role;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -8,6 +10,7 @@ import java.util.ArrayList;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import com.vishnu.inventory.dto.PurchaseOrderDto;
 import com.vishnu.inventory.entity.Invoice;
 import com.vishnu.inventory.entity.OrderItem;
 import com.vishnu.inventory.entity.Product;
@@ -25,6 +28,7 @@ import org.springframework.stereotype.Service;
 
 import com.vishnu.inventory.entity.PurchaseOrder;
 import com.vishnu.inventory.exception.ResourceNotFoundException;
+import com.vishnu.inventory.mapper.EntityMapper;
 import com.vishnu.inventory.repository.PurchaseOrderRepository;
 import com.vishnu.inventory.service.PurchaseOrderService;
 
@@ -41,6 +45,7 @@ private final OrderItemRepository orderItemRepository;
 private final InvoiceRepository invoiceRepository;
 
 private final UserRepository userRepository;
+private final EntityMapper entityMapper;
 
 public PurchaseOrderServiceImpl(
 
@@ -52,7 +57,8 @@ public PurchaseOrderServiceImpl(
 
         InvoiceRepository invoiceRepository,
 
-        UserRepository userRepository
+        UserRepository userRepository,
+        EntityMapper entityMapper
 
 ) {
 
@@ -65,29 +71,47 @@ public PurchaseOrderServiceImpl(
     this.invoiceRepository = invoiceRepository;
 
     this.userRepository = userRepository;
-
-}
-@Override
-
-public List<PurchaseOrder> getAll() {
-
-    return purchaseOrderRepository.findAll();
+    this.entityMapper = entityMapper;
 
 }
 
 @Override
 
-public PurchaseOrder getById(
+public List<PurchaseOrderDto> getAll() {
+
+    return purchaseOrderRepository
+
+            .findAll()
+
+            .stream()
+
+            .map(
+
+                    entityMapper::toPurchaseOrderDto
+
+            )
+
+            .toList();
+
+}
+
+@Override
+
+public PurchaseOrderDto getById(
 
         Long id
 
 ) {
 
-    return purchaseOrderRepository
+    PurchaseOrder order =
+
+            purchaseOrderRepository
 
             .findById(id)
 
-            .orElseThrow(() ->
+            .orElseThrow(
+
+                    () ->
 
                     new ResourceNotFoundException(
 
@@ -96,6 +120,12 @@ public PurchaseOrder getById(
                     )
 
             );
+
+    return entityMapper.toPurchaseOrderDto(
+
+            order
+
+    );
 
 }
 @Override
@@ -124,7 +154,7 @@ public PurchaseOrder placeOrder(
 
                     new ResourceNotFoundException(
 
-                            "User not found"
+                            "Customer not found"
 
                     )
 
@@ -134,7 +164,7 @@ public PurchaseOrder placeOrder(
 
             customer.getRole()
 
-            != com.vishnu.inventory.entity.Role.CUSTOMER
+            != Role.CUSTOMER
 
     ) {
 
@@ -146,7 +176,215 @@ public PurchaseOrder placeOrder(
 
     }
 
-    return null;
+    PurchaseOrder purchaseOrder =
+
+            PurchaseOrder.builder()
+
+                    .orderDate(
+
+                            LocalDateTime.now()
+
+                    )
+
+                    .status(
+
+                            OrderStatus.PLACED
+
+                    )
+
+                    .user(
+
+                            customer
+
+                    )
+
+                    .orderItems(
+
+                            new ArrayList<>()
+
+                    )
+
+                    .totalAmount(
+
+                            BigDecimal.ZERO
+
+                    )
+
+                    .build();
+
+    BigDecimal total = BigDecimal.ZERO;
+
+    for (
+
+            OrderItemRequest item :
+
+            request.getItems()
+
+    ) {
+
+        Product product =
+
+                productRepository
+
+                        .findById(
+
+                                item.getProductId()
+
+                        )
+
+                        .orElseThrow(() ->
+
+                                new ResourceNotFoundException(
+
+                                        "Product not found"
+
+                                )
+
+                        );
+
+        if (
+
+                product.getStock()
+
+                < item.getQuantity()
+
+        ) {
+
+            throw new RuntimeException(
+
+                    "Insufficient stock for "
+
+                    + product.getName()
+
+            );
+
+        }
+
+        product.setStock(
+
+                product.getStock()
+
+                - item.getQuantity()
+
+        );
+
+        productRepository.save(
+
+                product
+
+        );
+
+        BigDecimal itemPrice =
+
+                product.getPrice()
+
+                        .multiply(
+
+                                BigDecimal.valueOf(
+
+                                        item.getQuantity()
+
+                                )
+
+                        );
+
+        total = total.add(
+
+                itemPrice
+
+        );
+
+        OrderItem orderItem =
+
+                OrderItem.builder()
+
+                        .product(
+
+                                product
+
+                        )
+
+                        .quantity(
+
+                                item.getQuantity()
+
+                        )
+
+                        .price(
+
+                                itemPrice
+
+                        )
+
+                        .purchaseOrder(
+
+                                purchaseOrder
+
+                        )
+
+                        .build();
+
+        purchaseOrder
+
+                .getOrderItems()
+
+                .add(
+
+                        orderItem
+
+                );
+
+    }
+
+    purchaseOrder.setTotalAmount(
+
+            total
+
+    );
+
+    PurchaseOrder savedOrder =
+
+            purchaseOrderRepository
+
+                    .save(
+
+                            purchaseOrder
+
+                    );
+
+    Invoice invoice =
+
+            Invoice.builder()
+
+                    .invoiceNumber(
+
+                            "INV-"
+
+                            + savedOrder.getId()
+
+                    )
+
+                    .generatedAt(
+
+                            LocalDateTime.now()
+
+                    )
+
+                    .purchaseOrder(
+
+                            savedOrder
+
+                    )
+
+                    .build();
+
+    invoiceRepository.save(
+
+            invoice
+
+    );
+
+    return savedOrder;
 
 }
 

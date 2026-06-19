@@ -1,6 +1,9 @@
 package com.vishnu.inventory.controller;
 
 import java.util.List;
+import com.vishnu.inventory.request.SupplierRequest;
+
+import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
 
@@ -26,6 +29,29 @@ public SupplierController(
 
 }
 
+@PostMapping
+
+public ResponseEntity<SupplierDto> create(
+
+        @Valid
+
+        @RequestBody
+
+        SupplierRequest request
+
+) {
+
+    return ResponseEntity.ok(
+
+            supplierService.create(
+
+                    request
+
+            )
+
+    );
+
+}
 @GetMapping
 
 public ResponseEntity<List<SupplierDto>> getAll() {

@@ -1,6 +1,9 @@
 package com.vishnu.inventory.mapper;
 
 import org.modelmapper.ModelMapper;
+import com.vishnu.inventory.dto.InvoiceDto;
+
+import com.vishnu.inventory.entity.Invoice;
 
 import org.springframework.stereotype.Component;
 
@@ -13,6 +16,9 @@ import com.vishnu.inventory.entity.Category;
 import com.vishnu.inventory.entity.Product;
 import com.vishnu.inventory.entity.Supplier;
 import com.vishnu.inventory.entity.User;
+import com.vishnu.inventory.dto.PurchaseOrderDto;
+
+import com.vishnu.inventory.entity.PurchaseOrder;
 
 @Component
 
@@ -102,6 +108,84 @@ public ProductDto toProductDto(
                 product
                         .getSupplier()
                         .getId()
+        );
+
+    }
+
+    return dto;
+
+}
+public InvoiceDto toInvoiceDto(
+
+        Invoice invoice
+
+) {
+
+    InvoiceDto dto =
+
+            mapper.map(
+
+                    invoice,
+
+                    InvoiceDto.class
+
+            );
+
+    if(
+
+            invoice.getPurchaseOrder()
+
+            != null
+
+    ) {
+
+        dto.setOrderId(
+
+                invoice
+
+                        .getPurchaseOrder()
+
+                        .getId()
+
+        );
+
+    }
+
+    return dto;
+
+}
+public PurchaseOrderDto toPurchaseOrderDto(
+
+        PurchaseOrder order
+
+) {
+
+    PurchaseOrderDto dto =
+
+            mapper.map(
+
+                    order,
+
+                    PurchaseOrderDto.class
+
+            );
+
+    if(
+
+            order.getUser()
+
+            != null
+
+    ) {
+
+        dto.setUserId(
+
+                order
+
+                        .getUser()
+
+                        .getId()
+
         );
 
     }

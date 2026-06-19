@@ -30,7 +30,9 @@ private LocalDateTime orderDate;
 
 private BigDecimal totalAmount;
 
-private String status;
+@Enumerated(EnumType.STRING)
+
+private OrderStatus status;
 
 @ManyToOne
 @JoinColumn(name = "user_id")

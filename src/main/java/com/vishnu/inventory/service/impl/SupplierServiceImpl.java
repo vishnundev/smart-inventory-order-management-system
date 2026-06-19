@@ -1,6 +1,7 @@
 package com.vishnu.inventory.service.impl;
 
 import java.util.List;
+import com.vishnu.inventory.request.SupplierRequest;
 
 import org.springframework.stereotype.Service;
 
@@ -70,6 +71,57 @@ public SupplierDto getById(
                     )
 
             );
+
+    return entityMapper.toSupplierDto(
+
+            supplier
+
+    );
+
+}
+@Override
+
+public SupplierDto create(
+
+        SupplierRequest request
+
+) {
+
+    Supplier supplier =
+
+            Supplier.builder()
+
+                    .name(
+
+                            request.getName()
+
+                    )
+
+                    .email(
+
+                            request.getEmail()
+
+                    )
+
+                    .phone(
+
+                            request.getPhone()
+
+                    )
+
+                    .address(
+
+                            request.getAddress()
+
+                    )
+
+                    .build();
+
+    supplier = supplierRepository.save(
+
+            supplier
+
+    );
 
     return entityMapper.toSupplierDto(
 
