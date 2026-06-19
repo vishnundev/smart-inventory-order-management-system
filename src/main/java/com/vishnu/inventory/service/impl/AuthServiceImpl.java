@@ -103,7 +103,7 @@ public AuthResponse register(
 
                     request.getRole() == null
 
-                            ? Role.EMPLOYEE
+                            ? Role.CUSTOMER
 
                             : request.getRole()
 

@@ -61,6 +61,21 @@ public SupplierDto toSupplierDto(
     );
 
 }
+public Supplier toSupplierEntity(
+
+        SupplierDto supplierDto
+
+) {
+
+    return mapper.map(
+
+            supplierDto,
+
+            Supplier.class
+
+    );
+
+}
 
 public ProductDto toProductDto(
         Product product
