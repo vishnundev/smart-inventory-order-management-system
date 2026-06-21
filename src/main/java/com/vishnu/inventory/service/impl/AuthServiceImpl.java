@@ -125,19 +125,27 @@ public AuthResponse register(
 
     return AuthResponse.builder()
 
-            .token(
+    		.token(
 
-                    token
+    		        token
 
-            )
+    		)
 
-            .email(
+    		.email(
 
-                    user.getEmail()
+    		        user.getEmail()
 
-            )
+    		)
 
-            .build();
+    		.role(
+
+    		        user.getRole()
+
+    		        .name()
+
+    		)
+
+    		.build();
 
 }
 
@@ -187,19 +195,27 @@ public AuthResponse login(
 
     return AuthResponse.builder()
 
-            .token(
+    		.token(
 
-                    token
+    		        token
 
-            )
+    		)
 
-            .email(
+    		.email(
 
-                    user.getEmail()
+    		        user.getEmail()
 
-            )
+    		)
 
-            .build();
+    		.role(
+
+    		        user.getRole()
+
+    		        .name()
+
+    		)
+
+    		.build();
 
 }
 
